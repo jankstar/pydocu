@@ -28,7 +28,9 @@ from datetime import datetime, timezone, timedelta
 import locale
 
 from classification import Classification
-myClassfication = Classification()
+pydocuClassfication = Classification()
+
+from invoice2data_txt import main as invoice2data_txt_main
 
 
 #Set time zone of the server
@@ -336,7 +338,7 @@ class Entity(EntityApi):
                 return (PredictEntity(score=100, item=self, methode="regexp"))
 
         if self.similar:
-            perdict = myClassfication.predict_sts([i_str],[self.similar])
+            perdict = pydocuClassfication.predict_sts([i_str],[self.similar])
             score: float = perdict["score"][0][0]
             return (PredictEntity(score=score*100, item=self, method="similar"))
 
@@ -467,16 +469,74 @@ class Document(DocumentApi):
     receiver: list[PredictEntity] = []
     entities: list[PredictEntity] = []
     data: Union[DocumentData, None] = None
+    parse: dict = None
 
     def save(self):
-        # save data as json for async
+        """save data as json for async"""
         if not self.filename:
             raise ValueError("document "+self.id+" filename missing")
         with open(self.filename + ".json", "w") as file:
             file.write(json.dumps(jsonable_encoder(self)))
 
+    def do_parse(self):
+        """Perform parse text-data from template"""
+        self.task = "60 - parse template "
+        self.protocol.append(
+            datetime.now(LOCAL_TIMEZONE).isoformat() + "/" + self.task
+        )
+        template_folder = app_data.temp_dir + "/" + self.tenant_id + "/template"
+
+        if not os.path.exists(template_folder):
+            #if the template directory does not exist, create it now
+            os.mkdir(template_folder)
+            msg = (
+                datetime.now(LOCAL_TIMEZONE).isoformat()
+                + "/W - "
+                + self.task
+                + " Warning: "
+                + "template directory does not exist, create it now"
+            )
+            self.protocol.append(msg)            
+            #there can be no templates then -> out
+            return
+        
+        if self.ocr_all == None or self.ocr_all == "":
+            msg = (
+                datetime.now(LOCAL_TIMEZONE).isoformat()
+                + "/W - "
+                + self.task
+                + " Warning: "
+                + "no ocr/txt data found"
+            )
+            self.protocol.append(msg)            
+            return
+
+        #textfile für parsing erzeugen
+        with open(app_data.temp_dir + "/"+self.id + "_parse.txt", "w") as file:
+            file.write(self.ocr_all)
+        
+        MyArgs = dict(
+            input_reader='textfile',
+            emplate_folder=template_folder,
+            exclude_built_in_templates=True,
+            output_format='json',
+            output_name=app_data.temp_dir + "/"+self.id + "_parse.json",
+            input_files=app_data.temp_dir + "/"+self.id + "_parse.txt"
+        )
+
+        invoice2data_txt_main(args=MyArgs)
+
+        with open(app_data.temp_dir + "/"+self.id + "_parse.json", "rt") as file:
+            self.parse = json.load(file)
+
+        if os.path.exists(app_data.temp_dir + "/"+self.id + "_parse.txt"):
+            os.remove(app_data.temp_dir + "/"+self.id + "_parse.txt")
+
+        if os.path.exists(app_data.temp_dir + "/"+self.id + "_parse.json"):
+            os.remove(app_data.temp_dir + "/"+self.id + "_parse.json")
+
     def do_classification(self):
-        """Performs classification for the docuemnt"""
+        """Performs classification for the document"""
         self.task = "40 - classification"
         self.protocol.append(
             datetime.now(LOCAL_TIMEZONE).isoformat() + "/" + self.task
@@ -486,7 +546,7 @@ class Document(DocumentApi):
 
         if tenant.classes != None and len(tenant.classes.labels) != 0 and self.ocr_p1:
 
-            perdict = myClassfication.predict_zs(self.ocr_p1,tenant.classes.labels)
+            perdict = pydocuClassfication.predict_zs(self.ocr_p1,tenant.classes.labels)
             my_score = perdict["score"]
 
             result = []
@@ -750,14 +810,14 @@ def background_task(document: Document, task: str = None):
 
         """-----------------------------------"""
         if task == None or task == "40":
-            if myClassfication.model_sts == None:
+            if pydocuClassfication.model_sts == None:
                 document.task = "40 - load models for ai classification"
                 document.protocol.append(
                     datetime.now(LOCAL_TIMEZONE).isoformat()
                     + "/"
                     + document.task
                 )                
-                myClassfication.load_Models()
+                pydocuClassfication.load_Models()
             document.do_classification()
 
 
@@ -828,6 +888,10 @@ def background_task(document: Document, task: str = None):
             )
             document.protocol.append(msg)
 
+        """-----------------------------------"""
+        if task == None or task == "60":
+
+            document.do_parse()
 
         """-----------------------------------"""
         document.task = "99 - end"
@@ -876,7 +940,7 @@ async def get_main(current_user: User = Depends(get_current_active_user)):
         raise HTTPException(status_code=500, detail="installation check is invalide")
 
 
-    if myClassfication.classifier_zs == None:
+    if pydocuClassfication.classifier_zs == None:
         l_msg = "no"
     else:
         l_msg = "yes"
@@ -948,10 +1012,10 @@ async def install_phrase(phrase: PhraseEnum, background_tasks: BackgroundTasks, 
                 l_msg = "Installation {0} was started".format(phrase)
         else:
             if phrase == PhraseEnum.models:
-                if myClassfication.model_sts == None:
+                if pydocuClassfication.model_sts == None:
                     def inst_model_task():
                         app_data.background_task += 1
-                        myClassfication.load_Models()
+                        pydocuClassfication.load_Models()
                         app_data.background_task -= 1
                         return
 
@@ -1230,6 +1294,38 @@ async def new_document(
 
     return {"id": document.id, "task": document.task}
 
+@app.post("/api/do_parse/{tenant}/{id}")
+async def post_do_parse(tenant: str, id: str, current_user: User = Depends(get_current_active_user)):
+    if not tenant in current_user.tenants:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )    
+    if not app_data.check_options(tenant):
+        raise HTTPException(status_code=500, detail="installation or tenant check is invalide")
+
+    if os.path.exists(app_data.temp_dir + "/" + tenant + "/" + id + ".json"):
+        try:
+            with open(
+                app_data.temp_dir + "/" + tenant + "/" + id + ".json", "rt"
+            ) as file:
+                document = Document.parse_obj(json.load(file))
+
+            if document.id != id:
+                raise HTTPException(status_code=400, detail="no document found")
+
+            document.do_parse()
+
+            return {"message": "document id "+id+" parsed"}
+        except Exception as e:
+            msg = e
+            if hasattr(e, 'message'):
+                msg = e.message
+            raise HTTPException(status_code=400, detail="No document found or parsing error: "+msg)
+    else:
+        raise HTTPException(status_code=400, detail="No document found")
+
 @app.post("/api/delete_document/{tenant}/{id}")
 async def delete_document(tenant: str, id: str, current_user: User = Depends(get_current_active_user)):
     """delete document from file store"""
@@ -1278,7 +1374,7 @@ def post_test_sts(pre:Pediction_sts, current_user: User = Depends(get_current_ac
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )    
-    perdict = myClassfication.predict_sts(pre.s1,pre.s2)
+    perdict = pydocuClassfication.predict_sts(pre.s1,pre.s2)
     pre.score = perdict["score"]
 
     return { "data": pre }
@@ -1297,7 +1393,7 @@ def post_test_zs(pre:Pediction_zs, current_user: User = Depends(get_current_acti
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    perdict = myClassfication.predict_zs(pre.sequence,pre.label)
+    perdict = pydocuClassfication.predict_zs(pre.sequence,pre.label)
     pre.score = perdict["score"]
 
     result = []
