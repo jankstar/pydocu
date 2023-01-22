@@ -107,6 +107,7 @@ def main(args):
     log = ""
     #log = _train_save(args)
     myClassfication = Classification()
+    myClassfication.load_Models()
     log = myClassfication.predict_sts(" ", "Berlin ist nicht klein")
     print(log)
     log = myClassfication.predict_zs(
