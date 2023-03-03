@@ -48,10 +48,10 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 fake_users_db = {
-    "jank": {
-        "username": "jank",
-        "full_name": "jank",
-        "email": "jankstar.berlin@gmail.com",
+    "admin": {
+        "username": "admin",
+        "full_name": "admin",
+        "email": "admin.pydoc@gmail.com",
         "roles": ["admin"],
         "tenants": ["1000"],
         "hashed_password":"$2b$12$U51E9KvBGrXEnKSUHr4x7upkBTcT17jt7JKFgdwPcuwR3R7ZtRkV6", 
@@ -1035,6 +1035,7 @@ async def install_phrase(phrase: PhraseEnum, background_tasks: BackgroundTasks, 
 
 @app.get("/api/tenant/{id}")
 async def get_tenant(id: str, current_user: User = Depends(get_current_active_user)):
+    '''provides all current information on a tenant'''
     if not id in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1086,6 +1087,7 @@ async def get_tenant(id: str, current_user: User = Depends(get_current_active_us
 
 @app.post("/api/tenant")
 async def post_tenant(tenant: TenantApi, current_user: User = Depends(get_current_active_user)):
+    '''define a new tenant'''
     if not tenant.id in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1148,6 +1150,7 @@ async def post_delete_tenant(id:str, tenant: TenantApi, current_user: User = Dep
 
 @app.post("/api/master_data/{list_name}/{tenant}")
 async def post_master_data(list_name:MasterDataEnum, tenant: str, entities_list: EntityListApi, current_user: User = Depends(get_current_active_user)):
+    '''Transfer of master data for "sender", "receiver" or "entities" to a tenant'''
     if not tenant in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
