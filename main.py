@@ -29,6 +29,7 @@ import locale
 
 from classification import Classification
 pydocuClassfication = Classification()
+pydocuClassfication.load_Models()
 
 from invoice2data_txt import main as invoice2data_txt_main
 
@@ -510,7 +511,7 @@ class Document(DocumentApi):
             self.protocol.append(msg)            
             return
 
-        #textfile für parsing erzeugen
+        #create textfile for parsing
         with open(app_data.temp_dir + "/"+self.id + "_parse.txt", "w") as file:
             file.write(self.ocr_all)
         
@@ -1205,6 +1206,7 @@ async def post_master_data(list_name:MasterDataEnum, tenant: str, entities_list:
 
 @app.post("/api/classes/{tenant}")
 async def classesApi(tenant: str, classesApi_list: ClassesApi, current_user: User = Depends(get_current_active_user)):
+    '''Define classification classes'''
     if not tenant in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1232,6 +1234,7 @@ async def classesApi(tenant: str, classesApi_list: ClassesApi, current_user: Use
 
 @app.get("/api/document/{tenant}/{id}")
 async def get_document(tenant: str, id: str, current_user: User = Depends(get_current_active_user)):
+    '''Provides the status and data for the document'''
     if not tenant in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1298,6 +1301,7 @@ async def new_document(
 
 @app.post("/api/do_parse/{tenant}/{id}")
 async def post_do_parse(tenant: str, id: str, current_user: User = Depends(get_current_active_user)):
+    '''Perform parse text-data from template'''
     if not tenant in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
