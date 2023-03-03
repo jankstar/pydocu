@@ -10,7 +10,7 @@ import logging
 from invoice2data.input import pdftotext
 from invoice2data.input import pdfminer_wrapper
 from invoice2data.input import tesseract
-from invoice2data.input import tesseract4
+##from invoice2data.input import tesseract4
 from invoice2data.input import gvision
 
 from invoice2data.extract.loader import read_templates
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 input_mapping = {
     "pdftotext": pdftotext,
     "tesseract": tesseract,
-    "tesseract4": tesseract4,
+##    "tesseract4": tesseract4,
     "pdfminer": pdfminer_wrapper,
     "gvision": gvision,
     "textfile": textfile,

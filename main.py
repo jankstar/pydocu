@@ -54,8 +54,7 @@ fake_users_db = {
         "email": "admin.pydoc@gmail.com",
         "roles": ["admin"],
         "tenants": ["1000"],
-        "hashed_password":"$2b$12$U51E9KvBGrXEnKSUHr4x7upkBTcT17jt7JKFgdwPcuwR3R7ZtRkV6", 
-        #"$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+        "hashed_password":"$2b$12$IrZX5u1uPOGXzWai55Y3wuj7Y98Ke7IblXVCAPwFGsPUzvqautCU2",  #: test
         "disabled": False,
     },
 }

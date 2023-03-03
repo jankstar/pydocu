@@ -28,7 +28,7 @@ we use bearer token via url
 ```
 /token
 ```
-with username and password
+with username and password, example ist "admin" password "test" - change please.
 
 All further accesses must be made with the token
 
@@ -44,7 +44,7 @@ Overview of the installed information, about the user and the tenants used.
   "version": "0.1.0",
   "datetime": "2023-01-22T11:25:32.455365+01:00",
   "ghostscript": "GPL Ghostscript 9.56.1 (2022-04-04)",
-  "tesseract": "tesseract 5.2.0",
+  "tesseract": "tesseract 5.3.0",
   "models": "yes",
   "temp_dir": "./pydoc",
   "status": {
