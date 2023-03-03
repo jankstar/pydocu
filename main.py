@@ -16,6 +16,8 @@ import re
 from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.responses import FileResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -957,6 +959,17 @@ async def get_main(current_user: User = Depends(get_current_active_user)):
         "user": current_user,
     }
 
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse('favicon.ico')
+
+@app.get("/docs", include_in_schema=False)
+async def swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="FastAPI",
+        swagger_favicon_url="/favicon.ico"
+    )
 
 @app.post("/install/{phrase}")
 async def install_phrase(phrase: PhraseEnum, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_active_user)):
