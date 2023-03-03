@@ -26,6 +26,7 @@ var/
 ./env
 .vscode
 .vscode/
+.DS_Store
 
 # Installer logs
 pip-log.txt
