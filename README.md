@@ -2,6 +2,11 @@
 
 fastapi server for classification of documents and extraction of data
 
+clone it <br>
+```
+git clone https://github.com/jankstar/pydocu.git
+```
+
 ## start server
 ```
 source env/bin/activate
@@ -9,7 +14,9 @@ export TRANSFORMERS_CACHE=./build
 uvicorn main:app --reload --workers 10
 ```
 
-openpai starts at 
+The ```--reload``` parameter is only needed when developing. The ```source``` command when working with ```env```.
+
+OpenAPI starts at 
 ```
 http://127.0.0.1:8000/docs
 ```
@@ -21,6 +28,14 @@ The following directories must be provided on the server:
 These directories are Azure compliant under /home for persistent data.
 Otherwise the directories ```./pydoc```und ```./build``` used. In an Azure instance, these directories are no longer available after a restart - please note that.
 
+## Resources
+The installation requires approx. 16 GB - of which the AI models account for approx. 5 GB, the Python installation with libraries requires approx. 10 GB.
+The Azure instance requires approx. 7 GB of memory.
+
+## Docker
+Build docker images:
+``` docker build --tag pydoc . ```
+
 ## Function overview
 
 ### login
@@ -28,11 +43,11 @@ we use bearer token via url
 ```
 /token
 ```
-with username and password, example ist "admin" password "test" - change please.
+with username and password, example ist ```admin``` password ```test``` - change please. 
 
 All further accesses must be made with the token
 
-Attention: the application does not manage a user DB; there is a user "Admin" in the code with the hash - this must be implemented individually. There is a servcies that provides the hash for a password, so that you can write this hash into the code for testing. This is not a productive solution and must be adapted individually.
+<b>Attention</b>: the application does not manage a user DB; there is a user "Admin" in the code with the hash - this must be implemented individually. There is a servcies that provides the hash for a password, so that you can write this hash into the code for testing. This is not a productive solution and must be adapted individually.
 
 ### GET "/" - get main info
 Overview of the installed information, about the user and the tenants used.
@@ -70,7 +85,7 @@ Overview of the installed information, about the user and the tenants used.
 
 ```
 
-The application uses ghostscript for conversion and tesseract for OCR. These applications can be installed via a service. The call is done via shel commands.
+The application uses ghostscript for conversion and tesseract for OCR. These applications can be installed via a service. The call is done via shel commands. The server must run on a Unix system - e.g. Azure or in Docker.
 
 ## POST "/install/{phrase}" - Installed asynchronously
 args: phrase with gs, tesseract or models
@@ -185,6 +200,8 @@ The processing takes place in the background in various steps:
 43 - find entities
 51 - find date 
 99 - end
+
+With the ID, the status must be queried via the GET function below. The document has been processed when step 99 is reached. 
 
 ## POST "/api/do_parse/{tenant}/{id}" - Perform parse text-data from template
 This function parses with the library invoice2data based on yaml-templates based on regex formulas
@@ -342,10 +359,10 @@ example:
 ```
 
 ## POST "/api/delete_document/{tenant}/{id}" 
-Delete the data for a document.
+The clean-up should take place when the document has been processed - step 99 - and the data has been downloaded.
 
 
-## test functions
+## Test functions
 ```POST "/api/predict_sts" ``` - compares semantics of two sentences</br>
 ```POST "/api/predict_zs"``` - semantic classification of a sentence</br>
 
@@ -364,3 +381,5 @@ is used for determination of business partners, if no match was found via discre
 Attention: the models are so big that the application will only run on a virtual machine with at least 6 GB. Installing the models of about 1 GB each takes time and bandwidth. The models are buffered on the machine - space must be provided for this.
 
 The application runs on a virtual Azure instance Basic B3 with 7GB. Additional memory can be mounted under /home/build, then the buffered models are located there.
+
+Berlin 2023/05/15
