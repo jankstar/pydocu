@@ -961,7 +961,7 @@ async def get_main(current_user: User = Depends(get_current_active_user)):
 
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon():
-    return FileResponse('favicon.ico')
+    return FileResponse('./favicon.ico')
 
 @app.get("/docs", include_in_schema=False)
 async def swagger_ui_html():
