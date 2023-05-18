@@ -190,16 +190,16 @@ An ID can be provided, otherwise it will be generated. The ID is used to access 
 
 A base64 data block is required, in which the document is stored as a pdf.
 
-The processing takes place in the background in various steps:
-10 - save as pdf
-20 - convert page to jpg
-30 - ocr
-40 - classification
-41 - find receiver
-42 - find sender
-43 - find entities
-51 - find date 
-99 - end
+The processing takes place in the background in various steps:<br>
+10 - save as pdf<br>
+20 - convert page to jpg<br>
+30 - ocr<br>
+40 - classification<br>
+41 - find receiver<br>
+42 - find sender<br>
+43 - find entities<br>
+51 - find date <br>
+99 - end<br>
 
 With the ID, the status must be queried via the GET function below. The document has been processed when step 99 is reached. 
 
