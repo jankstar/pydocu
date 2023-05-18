@@ -372,10 +372,12 @@ The clean-up should take place when the document has been processed - step 99 - 
 ```GET "/api/hash_password/{password}"```- print hash of an string
 
 ## AI Models
-<a href="https://huggingface.co/Sahajtomar/German_Zeroshot?candidateLabels=Verbrechen%2CTrag%C3%B6die%2CStehlen&multiClass=false&text=Letzte+Woche+gab+es+einen+Selbstmord+in+einer+nahe+gelegenen+kolonie">german zero shot</a> 
-is used for the classification of the forms
+<a href="https://huggingface.co/Sahajtomar/German_Zeroshot">Sahajtomar/German_Zeroshot</a><br>
+german zero shot is used for the classification of the forms
 
-<a href="https://huggingface.co/Sahajtomar/German-semantic">compares semantics of two german sentences</a>
+<a href="https://huggingface.co/Sahajtomar/German-semantic">Sahajtomar/German-semantic</a> or<br>
+<a href="https://huggingface.co/deutsche-telekom/gbert-large-paraphrase-cosine">deutsche-telekom/gbert-large-paraphrase-cosine</a><br>
+compares semantics of two german sentences
 is used for determination of business partners, if no match was found via discrete comparison, e.g. bank account or order number
 
 Attention: the models are so big that the application will only run on a virtual machine with at least 6 GB. Installing the models of about 1 GB each takes time and bandwidth. The models are buffered on the machine - space must be provided for this.

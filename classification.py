@@ -19,7 +19,9 @@ class Classification:
 
     def load_Models(self):
         if os.path.exists('/home/build'): 
-            self.model_sts = SentenceTransformer('Sahajtomar/German-semantic',cache_folder="/home/build")
+            #self.model_sts = SentenceTransformer('Sahajtomar/German-semantic',cache_folder="/home/build")
+            self.model_sts = SentenceTransformer('deutsche-telekom/gbert-large-paraphrase-cosine',cache_folder="/home/build")
+
             if os.path.exists('/home/build/Sahajtomar_German_Zeroshot'): 
                 self.tokenizer_zs = AutoTokenizer.from_pretrained("/home/build/Sahajtomar_German_Zeroshot")
             else:
@@ -33,7 +35,9 @@ class Classification:
                 self.model_zs.save_pretrained("/home/build/Sahajtomar_German_Zeroshot")        
 
         else:
-            self.model_sts = SentenceTransformer('Sahajtomar/German-semantic',cache_folder="./build")
+            #self.model_sts = SentenceTransformer('Sahajtomar/German-semantic',cache_folder="./build")
+            self.model_sts = SentenceTransformer('deutsche-telekom/gbert-large-paraphrase-cosine',cache_folder="./build")
+
             if os.path.exists('./build/Sahajtomar_German_Zeroshot'): 
                 self.tokenizer_zs = AutoTokenizer.from_pretrained("./build/Sahajtomar_German_Zeroshot")
             else:
