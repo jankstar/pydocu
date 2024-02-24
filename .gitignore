@@ -23,10 +23,12 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+env
 ./env
 .vscode
 .vscode/
 .DS_Store
+client
 
 # Installer logs
 pip-log.txt
