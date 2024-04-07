@@ -1,9 +1,9 @@
 import os
 #from torch import margin_ranking_loss, tensor
 if os.path.exists( '/home/build'):
-    os.environ['TRANSFORMERS_CACHE'] = '/home/build'
+    os.environ['HF_HOME'] = '/home/build'
 else:
-    os.environ['TRANSFORMERS_CACHE'] = './build'
+    os.environ['HF_HOME'] = './build'
 
 import uvicorn
 from typing import Tuple, Union, Any
@@ -19,7 +19,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 
 import asyncio
@@ -143,7 +143,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+    except jwt.ExpiredSignatureError:
         raise credentials_exception
     user = get_user(fake_users_db, username=token_data.username)
     if user is None:

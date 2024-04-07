@@ -6,7 +6,7 @@ WORKDIR /home
 # Set environment varibles
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV TRANSFORMERS_CACHE "/home/build" 
+ENV HF_HOME "/home/build" 
 
 
 # Install files

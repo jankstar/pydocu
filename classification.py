@@ -1,8 +1,8 @@
 import os
 if os.path.exists('/home/build'): 
-    os.environ['TRANSFORMERS_CACHE'] = '/home/build'
+    os.environ['HF_HOME'] = '/home/build'
 else:
-    os.environ['TRANSFORMERS_CACHE'] = './build'
+    os.environ['HF_HOME'] = './build'
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'False' #Disabling parallelism to avoid deadlocks...
 
