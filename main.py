@@ -374,7 +374,7 @@ class Tenant(TenantSave):
 
     def save(self):
 
-        tenant_save = TenantSave.parse_obj(self)
+        tenant_save = TenantSave.model_validate(self, strict=False, from_attributes=True)
         filename = app_data.temp_dir + "/" + self.id + "/tenant.txt"
         with open(filename, "wt") as file:
             file.write(json.dumps(jsonable_encoder(tenant_save)))        
@@ -407,28 +407,28 @@ def load_tenant( id: str, classes:bool=False, sender:bool=False, receiver:bool=F
     filename = app_data.temp_dir + "/" + id + "/tenant.txt"
     if os.path.exists(filename):
         with open(filename, "rt") as file:
-            tenant_save = TenantSave.parse_obj(json.load(file))
-            MyTenant = Tenant.parse_obj(tenant_save)
+            tenant_save = TenantSave.model_validate(json.load(file), strict=False, from_attributes=True)
+            MyTenant = Tenant.model_validate(tenant_save, strict=False, from_attributes=True)
 
     filename = app_data.temp_dir + "/" + MyTenant.id + "/classes.txt"
     if classes and os.path.exists(filename):
         with open(filename, "rt") as file:
-            MyTenant.classes =  ClassesApi.parse_obj(json.load(file))
+            MyTenant.classes =  ClassesApi.model_validate(json.load(file), strict=False, from_attributes=True)
 
     filename = app_data.temp_dir + "/" + MyTenant.id + "/sender.txt"
     if sender and os.path.exists(filename):
         with open(filename, "rt") as file:
-            MyTenant.sender = EntityList.parse_obj(json.load(file))
+            MyTenant.sender = EntityList.model_validate(json.load(file), strict=False, from_attributes=True)
 
     filename = app_data.temp_dir + "/" + MyTenant.id + "/receiver.txt"
     if receiver and os.path.exists(filename):
         with open(filename, "rt") as file:
-            MyTenant.receiver = EntityList.parse_obj(json.load(file))
+            MyTenant.receiver = EntityList.model_validate(json.load(file), strict=False, from_attributes=True)
 
     filename = app_data.temp_dir + "/" + MyTenant.id + "/entities.txt"
     if entities and os.path.exists(filename):
         with open(filename, "rt") as file:
-            MyTenant.entities = EntityList.parse_obj(json.load(file))
+            MyTenant.entities = EntityList.model_validate(json.load(file), strict=False, from_attributes=True)
 
     return MyTenant    
 
@@ -1125,7 +1125,7 @@ async def post_tenant(tenant: TenantApi, current_user: User = Depends(get_curren
                 status_code=400, detail="tenant id is invalide Error:" + err.args[0]
             )
 
-    tenant = Tenant.parse_obj(tenant)
+    tenant = Tenant.model_validate(tenant, strict=False, from_attributes=True)
     tenant.start = datetime.now(LOCAL_TIMEZONE).isoformat()
     tenant.save()
     return {"data": {"tenant": tenant.id}}
@@ -1182,7 +1182,7 @@ async def post_master_data(list_name:MasterDataEnum, tenant: str, entities_list:
         if entities_list.modus == ModusEnum.append:
             if os.path.exists(entities_txt):
                 with open(entities_txt, "rt") as file:
-                    my_entities_list = EntityList.parse_obj(json.load(file))
+                    my_entities_list = EntityList.model_validate(json.load(file), strict=False, from_attributes=True)
 
             for person in entities_list.entities:
                 # gleiche ID erst löschen
@@ -1262,7 +1262,7 @@ async def get_document(tenant: str, id: str, current_user: User = Depends(get_cu
             with open(
                 app_data.temp_dir + "/" + tenant + "/" + id + ".json", "rt"
             ) as file:
-                document = Document.parse_obj(json.load(file))
+                document = Document.model_validate(json.load(file), strict=False, from_attributes=True)
 
             if document.id != id:
                 raise HTTPException(status_code=400, detail="no document found")
@@ -1288,7 +1288,7 @@ async def new_document(
     if not app_data.check_options(tenant):
         raise HTTPException(status_code=500, detail="installation or tenant check is invalide")
 
-    document = Document.parse_obj(doc)
+    document = Document.model_validate(doc, strict=False, from_attributes=True)
 
     document.tenant_id = tenant
 
@@ -1329,7 +1329,7 @@ async def post_do_parse(tenant: str, id: str, current_user: User = Depends(get_c
             with open(
                 app_data.temp_dir + "/" + tenant + "/" + id + ".json", "rt"
             ) as file:
-                document = Document.parse_obj(json.load(file))
+                document = Document.model_validate(json.load(file), strict=False, from_attributes=True)
 
             if document.id != id:
                 raise HTTPException(status_code=400, detail="no document found")
@@ -1362,7 +1362,7 @@ async def delete_document(tenant: str, id: str, current_user: User = Depends(get
             with open(
                 app_data.temp_dir + "/" + tenant + "/" + id + ".json", "rt"
             ) as file:
-                document = Document.parse_obj(json.load(file))
+                document = Document.model_validate(json.load(file), strict=False, from_attributes=True)
 
             if document.id != id:
                 raise HTTPException(status_code=400, detail="no document found")
