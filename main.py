@@ -1104,7 +1104,7 @@ async def post_tenant(tenant: TenantApi, current_user: User = Depends(get_curren
     if not tenant.id in current_user.tenants:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect username or password or wrong tenant",
             headers={"WWW-Authenticate": "Bearer"},
         )   
     if not app_data.check_options():
