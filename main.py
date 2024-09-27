@@ -6,7 +6,7 @@ else:
     os.environ['HF_HOME'] = './build'
 
 import uvicorn
-from typing import Tuple, Union, Any
+from typing import  Union
 
 import uuid
 import base64
@@ -30,7 +30,7 @@ from datetime import datetime, timezone, timedelta
 import locale
 
 from classification import Classification
-pydocuClassfication = Classification()
+pydocuClassfication: Classification = Classification()
 pydocuClassfication.load_Models()
 
 from invoice2data_txt import main as invoice2data_txt_main
@@ -315,23 +315,23 @@ class Entity(EntityApi):
         i_str_trim = i_str.replace(" ", "")
         if self.tax_id:
             if self.tax_id.replace(" ", "") in i_str_trim:
-                 return (PredictEntity(score=100, item=self, methode="tax_id"))
+                 return PredictEntity(score=100, item=self, methode="tax_id")
                 
         if self.iban:
             if self.iban.replace(" ", "").upper() in i_str_trim.upper():
-                return (PredictEntity(score=100, item=self, methode="iban"))
+                return PredictEntity(score=100, item=self, methode="iban")
                 
         if self.tel:
             if self.tel.replace(" ", "") in i_str_trim:
-                return (PredictEntity(score=100, item=self, methode="tel"))
+                return PredictEntity(score=100, item=self, methode="tel")
 
         if self.email:
             if self.email.replace(" ", "").upper() in i_str_trim.upper():
-                return (PredictEntity(score=100, item=self, methode="email"))
+                return PredictEntity(score=100, item=self, methode="email")
 
         if self.exact:
             if self.exact.replace("\n"," ").replace("  ", " ") in i_str.replace("\n"," ").replace("  ", " "):
-                return (PredictEntity(score=100, item=self, methode="exact"))
+                return PredictEntity(score=100, item=self, methode="exact")
 
         if self.regexp:
             if re.search(
@@ -339,12 +339,12 @@ class Entity(EntityApi):
                 i_str,
                 re.IGNORECASE + re.MULTILINE
             ):
-                return (PredictEntity(score=100, item=self, methode="regexp"))
+                return PredictEntity(score=100, item=self, methode="regexp")
 
         if self.similar:
             perdict = pydocuClassfication.predict_sts([i_str],[self.similar])
             score: float = perdict["score"][0][0]
-            return (PredictEntity(score=score*100, item=self, method="similar"))
+            return PredictEntity(score=score*100, item=self, method="similar")
 
         return None
 
