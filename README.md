@@ -5,6 +5,9 @@ fastapi server for classification of documents and extraction of data
 clone it <br>
 ```
 git clone https://github.com/jankstar/pydocu.git
+cd pydocu
+python3.12 -m venv env
+pip install -r requirements.txt
 ```
 
 ## start server

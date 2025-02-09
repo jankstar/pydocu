@@ -105,7 +105,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
+def get_user(db, username: str|None):
     if username in db:
         user_dict = db[username]
         return UserInDB(**user_dict)
@@ -292,7 +292,7 @@ class MasterDataEnum(str, Enum):
     entities = "entities"
 
 class EntityApi(BaseModel):
-    id: str = None
+    id: str|None = None
     name: str = ""
     receiver_id: str = "" #
     sender_id: str = ""
@@ -311,27 +311,27 @@ class PredictEntity(BaseModel):
     method: str = ""
 
 class Entity(EntityApi):
-    def predict(self,i_str:str) -> PredictEntity:
+    def predict(self,i_str:str) -> PredictEntity|None:
         i_str_trim = i_str.replace(" ", "")
         if self.tax_id:
             if self.tax_id.replace(" ", "") in i_str_trim:
-                 return PredictEntity(score=100, item=self, methode="tax_id")
+                 return PredictEntity(score=100, item=self, method="tax_id")
                 
         if self.iban:
             if self.iban.replace(" ", "").upper() in i_str_trim.upper():
-                return PredictEntity(score=100, item=self, methode="iban")
+                return PredictEntity(score=100, item=self, method="iban")
                 
         if self.tel:
             if self.tel.replace(" ", "") in i_str_trim:
-                return PredictEntity(score=100, item=self, methode="tel")
+                return PredictEntity(score=100, item=self, method="tel")
 
         if self.email:
             if self.email.replace(" ", "").upper() in i_str_trim.upper():
-                return PredictEntity(score=100, item=self, methode="email")
+                return PredictEntity(score=100, item=self, method="email")
 
         if self.exact:
             if self.exact.replace("\n"," ").replace("  ", " ") in i_str.replace("\n"," ").replace("  ", " "):
-                return PredictEntity(score=100, item=self, methode="exact")
+                return PredictEntity(score=100, item=self, method="exact")
 
         if self.regexp:
             if re.search(
@@ -339,7 +339,7 @@ class Entity(EntityApi):
                 i_str,
                 re.IGNORECASE + re.MULTILINE
             ):
-                return PredictEntity(score=100, item=self, methode="regexp")
+                return PredictEntity(score=100, item=self, method="regexp")
 
         if self.similar:
             perdict = pydocuClassfication.predict_sts([i_str],[self.similar])
@@ -348,7 +348,7 @@ class Entity(EntityApi):
 
         return None
 
-class ModusEnum(str, Enum):
+class ModusEnum(Enum):
     append = "append"
     replace = "replace"
     delete = "delete"
@@ -473,7 +473,7 @@ class Document(DocumentApi):
     receiver: list[PredictEntity] = []
     entities: list[PredictEntity] = []
     data: Union[DocumentData, None] = None
-    parse: dict = None
+    parse: dict|None = None
 
     def save(self):
         """save data as json for async"""
@@ -594,10 +594,10 @@ class Document(DocumentApi):
         save_true = False
         if self.ocr_all and tenant_list != None:
             for person in tenant_list.entities:
-                if ((not self.data.receiver_id or 
+                if ((not self.data or not self.data.receiver_id or 
                     ( not person.receiver_id or 
                     person.receiver_id == self.data.receiver_id)) and
-                    (not self.data.sender_id or
+                    (not self.data or not self.data.sender_id or
                     ( not person.sender_id or
                     person.sender_id == self.data.sender_id))): 
 
@@ -630,18 +630,18 @@ async def async_job(command):
 
 def find_date(i_str:str, langu: str="de-DE"):
     regex_list = [
-        {"find": "Datum[ :]*(\d{1,2}\.\d{1,2}\.\d{4})[ \\s]*", "format": "%d.%m.%Y"},
-        {"find":"(?:[A-Za-z])(?:,)(?: den)? (\d{1,2}\.\d{1,2}\.\d{4})[ \\s]", "format": "%d.%m.%Y"},
+        {"find": r"Datum[ :]*(\d{1,2}\.\d{1,2}\.\d{4})[ \\s]*", "format": "%d.%m.%Y"},
+        {"find": r"(?:[A-Za-z])(?:,)(?: den)? (\d{1,2}\.\d{1,2}\.\d{4})[ \\s]", "format": "%d.%m.%Y"},
 
-        {"find": "Datum[ :]*(\d{1,2}\.\d{1,2}\.\d{2})[ \\s]*", "format": "%d.%m.%y"},
-        {"find":"(?:[A-Za-z])(?:,)(?: den)? (\d{1,2}\.\d{1,2}\.\d{2})[ \\s]", "format": "%d.%m.%y"},     
+        {"find": r"Datum[ :]*(\d{1,2}\.\d{1,2}\.\d{2})[ \\s]*", "format": "%d.%m.%y"},
+        {"find": r"(?:[A-Za-z])(?:,)(?: den)? (\d{1,2}\.\d{1,2}\.\d{2})[ \\s]", "format": "%d.%m.%y"},     
 
-        {"find": "Datum[ :]*(\d{1,2}\. (?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{2,4})[ \\s]*", "format": "%d. %B %Y"},
-        {"find":"(?:[A-Za-z])(?:,)(?: den)? (\d{1,2}\. (?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{2,4})[ \\s]", "format": "%d. %B %Y"},       
+        {"find": r"Datum[ :]*(\d{1,2}\. (?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{2,4})[ \\s]*", "format": "%d. %B %Y"},
+        {"find": r"(?:[A-Za-z])(?:,)(?: den)? (\d{1,2}\. (?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{2,4})[ \\s]", "format": "%d. %B %Y"},       
         
-        {"find": " (\d{1,2}\. (?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{2,4})[ \\s]*", "format": "%d. %B %Y"},
-        {"find": " (\d{1,2}\.\d{1,2}\.\d{4})[ \\s]*", "format": "%d.%m.%Y"},
-        {"find": " (\d{1,2}\.\d{1,2}\.\d{2})[ \\s]*", "format": "%d.%m.%y"},
+        {"find": r" (\d{1,2}\. (?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{2,4})[ \\s]*", "format": "%d. %B %Y"},
+        {"find": r" (\d{1,2}\.\d{1,2}\.\d{4})[ \\s]*", "format": "%d.%m.%Y"},
+        {"find": r" (\d{1,2}\.\d{1,2}\.\d{2})[ \\s]*", "format": "%d.%m.%y"},
 
         ]
 
@@ -656,7 +656,7 @@ def find_date(i_str:str, langu: str="de-DE"):
     return None, None
 
 """-----------------------------------"""
-def background_task(document: Document, task: str = None):
+def background_task(document: Document, task: str|None = None):
     """background task for one document """
     try:
         app_data.background_task += 1
@@ -667,6 +667,8 @@ def background_task(document: Document, task: str = None):
                 datetime.now(LOCAL_TIMEZONE).isoformat() + "/" + document.task
             )
             # convert to binary
+            if not document.base64:
+                raise ValueError("document "+document.id+" base64 missing")
             data = base64.b64decode(document.base64)
 
             with open(document.filename + ".pdf", "wb") as output_file:
@@ -682,6 +684,8 @@ def background_task(document: Document, task: str = None):
                 datetime.now(LOCAL_TIMEZONE).isoformat() + "/" + document.task
             )
             # convert to binary
+            if not document.base64:
+                raise ValueError("document "+document.id+" base64 missing")
             data = base64.b64decode(document.base64)
 
             with open(document.filename + ".pdf", "wb") as output_file:
@@ -877,7 +881,11 @@ def background_task(document: Document, task: str = None):
         else:    
             langu_iso = "de-DE"
 
-        finding_datum, err = find_date(document.ocr_p1,langu_iso)
+        if document.ocr_p1:
+            finding_datum, err = find_date(document.ocr_p1,langu_iso)
+        else:
+            finding_datum = None
+            err = Exception("no ocr_p1 in data found")    
         if finding_datum:
             if not document.data:
                 document.data = DocumentData()
@@ -1216,7 +1224,7 @@ async def post_master_data(list_name:MasterDataEnum, tenant: str, entities_list:
         raise HTTPException(
             status_code=500, detail="entities not processed error:'" + err.args[0] + "'"
         )
-    return {"message": "modus: '" + entities_list.modus + "' processed"}
+    return {"message": "modus: '" + str(entities_list.modus) + "' processed"}
 
 
 @app.post("/api/classes/{tenant}")
@@ -1340,9 +1348,9 @@ async def post_do_parse(tenant: str, id: str, current_user: User = Depends(get_c
 
             return {"message": "document id "+id+" parsed"}
         except Exception as e:
-            msg = e
-            if hasattr(e, 'message'):
-                msg = e.message
+            msg = str(e)
+            #if hasattr(e, 'message'):
+            #    msg = e.message
             raise HTTPException(status_code=400, detail="No document found or parsing error: "+msg)
     else:
         raise HTTPException(status_code=400, detail="No document found")
