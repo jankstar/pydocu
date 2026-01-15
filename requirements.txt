@@ -1,3 +1,4 @@
+annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.10.0
 bcrypt==4.3.0
@@ -7,8 +8,8 @@ charset-normalizer==3.4.3
 click==8.2.1
 cryptography==45.0.7
 dateparser==1.2.2
-fastapi==0.116.1
-filelock==3.19.1
+fastapi==0.128.0
+filelock==3.20.3
 fsspec==2025.9.0
 h11==0.16.0
 hf-xet==1.1.9
@@ -42,7 +43,7 @@ sentence-transformers==5.1.0
 setuptools==80.9.0
 six==1.17.0
 sniffio==1.3.1
-starlette==0.47.3
+starlette==0.50.0
 sympy==1.14.0
 textfile==0.1.5
 threadpoolctl==3.6.0
@@ -54,6 +55,6 @@ transformers==4.56.0
 typing-inspection==0.4.1
 typing_extensions==4.15.0
 tzlocal==5.3.1
-urllib3==2.5.0
+urllib3==2.6.3
 uvicorn==0.35.0
 wheel==0.45.1
