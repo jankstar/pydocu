@@ -25,6 +25,8 @@ var/
 *.egg
 env
 ./env
+.venv
+./.venv
 .vscode
 .vscode/
 .idea

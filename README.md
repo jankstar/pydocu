@@ -6,13 +6,12 @@ clone it <br>
 ```
 git clone https://github.com/jankstar/pydocu.git
 cd pydocu
-python3.12 -m venv env
-pip install -r requirements.txt
+uv sync
 ```
 
 ## start server
 ```
-source env/bin/activate
+source ./.venv/bin/activate
 export HF_HOME=./build 
 uvicorn main:app --reload --workers 10
 ```

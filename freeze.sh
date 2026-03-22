@@ -1,1 +1,1 @@
-pip freeze > requirements.txt
+uv pip freeze > requirements.txt
