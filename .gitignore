@@ -65,3 +65,5 @@ docs/_build/
 pytorch
 
 target
+
+uv.lock
