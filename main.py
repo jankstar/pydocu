@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 
 import jwt
-from passlib.context import CryptContext
+import bcrypt
 
 import asyncio
 from typing import List
@@ -93,16 +93,14 @@ class UserInDB(User):
     hashed_password: str
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+def get_password_hash(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def get_user(db, username: str|None):
@@ -1452,11 +1450,11 @@ def get_find_date( i_str:str, current_user: User = Depends(get_current_active_us
 @app.get("/api/hash_password/{password}")
 def get_hash_password( password:str):
     """print hash of an string"""
-    hash = pwd_context.hash(password)
-    verify = pwd_context.verify(password,hash)
+    hash = get_password_hash(password)
+    verify = verify_password(password, hash)
     return {
         "password":password,
-        "hash": pwd_context.hash(password),
+        "hash": hash,
         "valid": verify
         }
 
